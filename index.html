@@ -1,40 +1,36 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>カメラアプリ</title>
+  <meta charset="UTF-8">
+  <title>カメラ切り替えアプリ</title>
   <style>
     body {
       background: #111;
-      color: #fff;
+      color: white;
       font-family: sans-serif;
       text-align: center;
-      margin: 0;
       padding: 20px;
     }
-    video, canvas {
+    video {
       width: 90%;
       max-width: 400px;
       border: 3px solid #fff;
-      margin-top: 10px;
     }
-    #snap {
-      margin-top: 10px;
+    button {
+      margin: 10px;
       padding: 10px 20px;
-      font-size: 20px;
-      background: #28a745;
-      color: white;
+      font-size: 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    #photos {
-      margin-top: 20px;
-    }
+    #snap { background: #28a745; color: white; }
+    #switch { background: #007bff; color: white; }
     #photos img {
-      max-width: 90%;
-      margin: 10px 0;
+      width: 90%;
+      max-width: 400px;
       border: 2px solid #fff;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -45,35 +41,54 @@
 <video id="video" autoplay playsinline></video>
 <br>
 <button id="snap">📸 撮影</button>
+<button id="switch">🔄 カメラ切り替え</button>
 
 <div id="photos"></div>
 
 <script>
   const video = document.getElementById('video');
   const snap = document.getElementById('snap');
+  const switchBtn = document.getElementById('switch');
   const photos = document.getElementById('photos');
 
-  // カメラにアクセス
-  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => {
-      video.srcObject = stream;
-    })
-    .catch(err => {
-      alert('カメラにアクセスできません: ' + err.message);
-    });
+  let currentCamera = 'user'; // 'user' = インカメ, 'environment' = アウトカメ
+  let stream;
 
+  async function startCamera(facingMode) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facingMode },
+        audio: false
+      });
+      video.srcObject = stream;
+    } catch (err) {
+      alert('カメラにアクセスできません: ' + err.message);
+    }
+  }
+
+  // 初期：インカメ
+  startCamera(currentCamera);
+
+  // 撮影
   snap.addEventListener('click', () => {
-    // 撮影
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // 画像として表示
     const img = document.createElement('img');
     img.src = canvas.toDataURL('image/png');
     photos.prepend(img);
+  });
+
+  // カメラ切り替え
+  switchBtn.addEventListener('click', () => {
+    currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+    startCamera(currentCamera);
   });
 </script>
 
