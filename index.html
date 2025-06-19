@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>カメラアプリ</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    video, canvas {
+      width: 90%;
+      max-width: 400px;
+      border: 3px solid #fff;
+      margin-top: 10px;
+    }
+    #snap {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #photos {
+      margin-top: 20px;
+    }
+    #photos img {
+      max-width: 90%;
+      margin: 10px 0;
+      border: 2px solid #fff;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📷 カメラアプリ</h1>
+
+<video id="video" autoplay playsinline></video>
+<br>
+<button id="snap">📸 撮影</button>
+
+<div id="photos"></div>
+
+<script>
+  const video = document.getElementById('video');
+  const snap = document.getElementById('snap');
+  const photos = document.getElementById('photos');
+
+  // カメラにアクセス
+  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      alert('カメラにアクセスできません: ' + err.message);
+    });
+
+  snap.addEventListener('click', () => {
+    // 撮影
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // 画像として表示
+    const img = document.createElement('img');
+    img.src = canvas.toDataURL('image/png');
+    photos.prepend(img);
+  });
+</script>
+
+</body>
+</html>
